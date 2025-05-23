@@ -1,3 +1,25 @@
+## CHANGE-FOR-FORK
+
+[![](https://jitpack.io/v/mcxinyu/LibRtmp-Client-for-Android.svg)](https://jitpack.io/#mcxinyu/LibRtmp-Client-for-Android)
+
+
+The configuration of target_link_libraries in [CMakeLists.txt](rtmp-client/CMakeLists.txt) has been modified to support the requirements of [Support 16 KB page sizes](https://developer.android.com/guide/practices/page-sizes).
+
+### about androidx.media3:media3-datasource-rtmp
+
+androidx.media3 [RTMP DataSource module](https://github.com/androidx/media/tree/release/libraries/datasource_rtmp) uses [the rtmp-client library](https://github.com/ant-media/LibRtmp-Client-for-Android), but the upstream developers have not updated it in time to support 16k, if you encounter [the same problem](https://github.com/androidx/media/issues/1918), you can try use this library first to solve the problem.
+
+![Image](https://github.com/user-attachments/assets/f6b76cc5-e2b4-4157-83f7-f0f84e0a80b4)
+
+```kts
+  implementation("androidx.media3:media3-datasource-rtmp:1.6.1") {
+    exclude("io.antmedia", "rtmp-client")
+  }
+  implementation("com.github.mcxinyu:LibRtmp-Client-for-Android:v3.2.0.m2")
+```
+
+---
+
 # Librtmp Client for Android
 It is probably the smallest(~60KB) rtmp client for android. It calls librtmp functions over JNI interface.
 With all cpu architectures(arm, arm7, arm8, x86, x86-64, mips) its size is getting about 300KB
