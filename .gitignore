@@ -1,11 +1,10 @@
 *.iml
 .gradle
-/local.properties
-/.idea/workspace.xml
-/.idea/libraries
-/.idea/
+local.properties
+.idea
 .DS_Store
-/build
+build
+*/build
 /captures
 .externalNativeBuild
-/.idea/
+rtmp-client/.cxx/
