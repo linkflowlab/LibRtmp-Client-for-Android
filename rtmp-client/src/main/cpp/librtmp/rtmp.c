@@ -924,6 +924,17 @@ RTMP_Connect0(RTMP *r, struct sockaddr * service)
           RTMP_Log(RTMP_LOGERROR, "Error %d setting SO_SNDTIMEO", errno);
         }
 
+      // AIDEN FIX. Video data should be transferred to client as AC_VI(Midium priority)
+      // SOL_SOCKET/SO_PRIORITY is likely not to be applied to TOS field, so we use IP_TOS
+      // https://www.tucny.com/Home/dscp-tos
+      unsigned int tos = 0xA0;
+      int err_dscp = setsockopt(r->m_sb.sb_socket, IPPROTO_IP, IP_TOS, (const void*)&tos, sizeof(tos));
+      if(err_dscp < 0) {
+          RTMP_Log(RTMP_LOGERROR, "Error %d setting DSCP(IPPROTO_IP)", errno);
+      } else {
+          RTMP_Log(RTMP_LOGERROR, "DSCP(0XA0): Medium Priority(AC_VI) setup successfully");
+      }
+
       if (connect(r->m_sb.sb_socket, service, sizeof(struct sockaddr)) < 0)
 	{
 	  int err = GetSockError();
@@ -4006,7 +4017,9 @@ RTMP_SendPacket(RTMP *r, RTMPPacket *packet, int queue)
       hSize += cSize;
     }
 
-  if (nSize > 1 && t >= 0xffffff)
+  // FIXED(AIDEN): https://lists.mplayerhq.hu/pipermail/rtmpdump/2014-December/002406.html
+  // Refer also here for read packet : https://lists.mplayerhq.hu/pipermail/rtmpdump/2014-March/002338.html
+  if (/*nSize > 1 &&*/ t >= 0xffffff)
     {
       header -= 4;
       hSize += 4;
@@ -4048,7 +4061,9 @@ RTMP_SendPacket(RTMP *r, RTMPPacket *packet, int queue)
   if (nSize > 8)
     hptr += EncodeInt32LE(hptr, packet->m_nInfoField2);
 
-  if (nSize > 1 && t >= 0xffffff)
+  // FIXED(AIDEN): https://lists.mplayerhq.hu/pipermail/rtmpdump/2014-December/002406.html
+  // Refer also here for read packet : https://lists.mplayerhq.hu/pipermail/rtmpdump/2014-March/002338.html
+  if (/*nSize > 1 &&*/ t >= 0xffffff)
     hptr = AMF_EncodeInt32(hptr, hend, t);
 
   nSize = packet->m_nBodySize;
@@ -4105,6 +4120,13 @@ RTMP_SendPacket(RTMP *r, RTMPPacket *packet, int queue)
 	      header -= cSize;
 	      hSize += cSize;
 	    }
+	  // FIXED(AIDEN): https://lists.mplayerhq.hu/pipermail/rtmpdump/2014-December/002406.html
+	  // Refer also here for read packet : https://lists.mplayerhq.hu/pipermail/rtmpdump/2014-March/002338.html
+	  if (t >= 0xffffff)
+	  {
+	      header -= 4;
+	      hSize += 4;
+	  }
 	  *header = (0xc0 | c);
 	  if (cSize)
 	    {
@@ -4112,6 +4134,12 @@ RTMP_SendPacket(RTMP *r, RTMPPacket *packet, int queue)
 	      header[1] = tmp & 0xff;
 	      if (cSize == 2)
 		header[2] = tmp >> 8;
+	    }
+
+	  if (t >= 0xffffff)
+	    {
+	      char* extendedTimestamp = header + 1 + cSize;
+	      AMF_EncodeInt32(extendedTimestamp, extendedTimestamp + 4, t);
 	    }
 	}
     }

@@ -9,7 +9,7 @@ public class RTMPMuxer {
         System.loadLibrary("rtmp-jni");
     }
 
-    public native int open(String url, int video_width, int video_height);
+    public native int open(String url, int video_width, int video_height, int video_fps);
 
     /**
      * write h264 nal units

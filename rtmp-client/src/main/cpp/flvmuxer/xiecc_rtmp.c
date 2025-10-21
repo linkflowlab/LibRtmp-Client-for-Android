@@ -21,7 +21,7 @@ static const AVal av_height = AVC("height");
 static const AVal av_videocodecid = AVC("videocodecid");
 static const AVal av_avcprofile = AVC("avcprofile");
 static const AVal av_avclevel = AVC("avclevel");
-static const AVal av_videoframerate = AVC("videoframerate");
+static const AVal av_videoframerate = AVC("framerate");
 static const AVal av_audiocodecid = AVC("audiocodecid");
 static const AVal av_audiosamplerate = AVC("audiosamplerate");
 static const AVal av_audiochannels = AVC("audiochannels");
@@ -144,7 +144,7 @@ static uint8_t gen_audio_tag_header()
 }
 
 
-int rtmp_open_for_write(const char *url, uint32_t video_width, uint32_t video_height) {
+int rtmp_open_for_write(const char *url, uint32_t video_width, uint32_t video_height, uint32_t video_fps) {
     rtmp = RTMP_Alloc();
     if (rtmp == NULL) {
         return RTMP_ERROR_OPEN_ALLOC;
@@ -192,6 +192,7 @@ int rtmp_open_for_write(const char *url, uint32_t video_width, uint32_t video_he
         output = AMF_EncodeNamedNumber(output, outend, &av_duration, 0.0);
         output = AMF_EncodeNamedNumber(output, outend, &av_videocodecid, 7);
         output = AMF_EncodeNamedNumber(output, outend, &av_audiocodecid, 10);
+        output = AMF_EncodeNamedNumber(output, outend, &av_videoframerate, video_fps);
         output = AMF_EncodeInt24(output, outend, AMF_OBJECT_END);
 
         int body_len = output - buffer;
