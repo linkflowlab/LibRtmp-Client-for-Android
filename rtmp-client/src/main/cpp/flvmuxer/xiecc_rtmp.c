@@ -249,12 +249,12 @@ int rtmp_read_date(uint8_t* data, int size) {
 // @param [in] abs_ts     : indicate whether you'd like to use absolute time stamp
 int rtmp_sender_write_audio_frame(uint8_t *data,
                                   int size,
-                                  uint64_t dts_us,
+                                  uint64_t dts_ms,
                                   uint32_t abs_ts)
 {
 
     int val = RTMP_SUCCESS;
-    uint32_t audio_ts = (uint32_t)dts_us;
+    uint32_t audio_ts = (uint32_t)dts_ms;
     uint32_t offset;
     uint32_t body_len;
     uint32_t output_len;
@@ -488,7 +488,7 @@ int send_key_frame(int nal_len,  uint32_t ts,  uint32_t abs_ts, uint8_t *nal, in
 // @param [in] abs_ts     : indicate whether you'd like to use absolute time stamp
 int rtmp_sender_write_video_frame(uint8_t *data,
                                   int total,
-                                  uint64_t dts_us,
+                                  uint64_t dts_ms,
                                   int key,
                                   uint32_t abs_ts)
 {
@@ -509,7 +509,7 @@ int rtmp_sender_write_video_frame(uint8_t *data,
     buf = data;
     buf_offset = data;
     //total = size;
-    ts = (uint32_t)dts_us;
+    ts = (uint32_t)dts_ms;
 
     //ts = RTMP_GetTime() - start_time;
     offset = 0;
